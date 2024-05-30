@@ -1,5 +1,11 @@
 # AutoGrader
 
+## Running
+
+```bash
+mix run --no-halt
+```
+
 ## Objectives
 
 This program must be able to run a test suite for many (potentially hundreds)
