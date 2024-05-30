@@ -2,7 +2,7 @@
 
 ## Objectives
 
-This program should be able to run a test suite for many (potentially hundreds)
+This program must be able to run a test suite for many (potentially hundreds)
 of student submissions.
 
 Submissions might be simple Git projects, Java projects with JUnit tests to
@@ -10,6 +10,9 @@ run, etc ...
 
 The program should make use of all available CPU cores in order to grade
 submissions as fast as possible.
+
+A test unit crashing must also just be reported as having errored, and not
+crash the whole test suite / program.
 
 The project should contain basic test helpers (e.g. assert that a given
 function is called inside a specific JUnit test in a given file, or inspect
@@ -29,6 +32,9 @@ In the end, this project might be rewritten as a dependency application which
 would expose basic primitives to reach the ojectives above. But since this is
 a draft project for now, these primitives are yet to be discovered.
 
+Ultimately, running this project inside a container might be a good idea, to
+avoid bad student jokes (e.g. system commands deleting dotfiles or what not).
+
 ## Architecture/Design
 
 This is my first time getting a shot at manual process management (GenServer,
@@ -44,6 +50,8 @@ in config
 `%{name: "", score: ""}`
 
 `SubmissionRunner` process:
+  - checks for preliminary requirements (is a Git project, contains xyz files,
+etc ..)
   - determines the name of the student from the Git
 history
   - spawns a process for each test unit (`TestUnitRunner`) in
@@ -52,8 +60,8 @@ the test suite
 
 ## Test units
 
-I guess test units could be modules in a given folder (under a specific module)
-that would implement a behavior with `run` callback and must return either
-`:pass`, `:fail` or `{:error, error}`.
+I guess test units would be modules that would implement a behavior with a
+`run` callback and must return either `:pass`, `:fail` or `{:error, error}`.
 
-This way it is very easy to add new test units to be run on every submission.
+This way it is very easy to add new test units to be run on every submission by
+simply adding a new file and appending the module in a list in the config.
