@@ -1,4 +1,4 @@
-defmodule AutoGrader.SetupUnits.Java.InstallDependencies do
+defmodule TestSuites.PortfolioManager.Setup.Java.InstallDependencies do
   @behaviour AutoGrader.SetupUnit
 
   @impl true
@@ -13,5 +13,5 @@ defmodule AutoGrader.SetupUnits.Java.InstallDependencies do
   end
 
   @impl true
-  def timeout(), do: 60000
+  def timeout(), do: 300_000
 end

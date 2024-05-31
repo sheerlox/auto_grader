@@ -1,4 +1,4 @@
-defmodule AutoGrader.TestUnits.Java.RunJunitTests do
+defmodule TestSuites.PortfolioManager.Tests.Java.RunJunitTests do
   @behaviour AutoGrader.TestUnit
 
   def run(_submission_path) do

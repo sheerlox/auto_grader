@@ -2,15 +2,15 @@ import Config
 
 config :auto_grader,
   submissions_path: "../REPOSITORIES/TP_PORTFOLIO_MANAGER",
-  init_module: AutoGrader.SetupUnits.Init,
+  init_module: TestSuites.PortfolioManager.Setup.Init,
   # setup units are run in order!
   setup_units: [
-    AutoGrader.SetupUnits.Java.CheckRequirements,
-    AutoGrader.SetupUnits.Java.InstallDependencies
+    TestSuites.PortfolioManager.Setup.Java.CheckRequirements,
+    TestSuites.PortfolioManager.Setup.Java.InstallDependencies
   ],
   test_units: [
-    AutoGrader.TestUnits.Example,
-    AutoGrader.TestUnits.Java.RunJunitTests
+    TestSuites.PortfolioManager.Tests.Example,
+    TestSuites.PortfolioManager.Tests.Java.RunJunitTests
   ]
 
 config :logger, :default_formatter, truncate: :infinity

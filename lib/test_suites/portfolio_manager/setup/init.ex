@@ -1,4 +1,4 @@
-defmodule AutoGrader.SetupUnits.Init do
+defmodule TestSuites.PortfolioManager.Setup.Init do
   @moduledoc """
   Init setup module that runs before processing submissions.
   """
