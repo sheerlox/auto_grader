@@ -1,5 +1,20 @@
 # AutoGrader
 
+## Abstract
+
+I'm working on this project because I need to grade ~ 250 student projects
+(3 different coding assignments, 1 on Git and 2 on Java).
+
+My timeline is very tight, because I need to turn in the grades ASAP, but also
+because I got a lot going on with @Talent-Ideal.
+
+Because of this, and as it's my first time diving into Elixir's processes and
+behaviors, this project will probably make some developers scream. My apologies
+for this. But it's a good starting point, and I believe that in the future,
+adding a DSL and enough utilities (e.g. to work with Git, run Java tests,
+etc ...), this project can become something very interesting, leveraging the
+core features of the BEAM VM and Elixir's language.
+
 ## Running
 
 ```bash
