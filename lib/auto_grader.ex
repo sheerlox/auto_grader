@@ -19,12 +19,16 @@ defmodule AutoGrader do
 
   @impl true
   def handle_cast(:run, _state) do
+    init_module = Application.get_env(:auto_grader, :init_module)
+    :ok = init_module.run(nil)
+
     submissions_path = Application.get_env(:auto_grader, :submissions_path)
 
     submissions =
       File.ls!(submissions_path)
       |> Enum.map(&Path.join(submissions_path, &1))
       |> Enum.filter(&File.dir?(&1))
+      |> Enum.take(5)
 
     state =
       Enum.reduce(

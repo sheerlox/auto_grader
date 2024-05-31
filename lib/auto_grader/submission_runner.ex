@@ -9,7 +9,7 @@ defmodule AutoGrader.SubmissionRunner do
 
   @impl true
   def init(args) do
-    # start processing submissions after initialization
+    # automatically start processing submissions after initialization
     GenServer.cast(self(), :run)
 
     parent = Keyword.get(args, :parent)
@@ -20,30 +20,41 @@ defmodule AutoGrader.SubmissionRunner do
   end
 
   @impl true
-  def handle_cast(:run, {_, _, _, submission_path} = state) do
+  def handle_cast(:run, {_, refs, parent, submission_path} = state) do
     Logger.info("Processing submission \"#{submission_path}\"")
 
-    test_units = Application.get_env(:auto_grader, :test_units)
+    case setup(submission_path) do
+      :ok ->
+        test_units = Application.get_env(:auto_grader, :test_units)
 
-    state =
-      Enum.reduce(
-        test_units,
-        state,
-        fn test_unit, {results, refs, parent, submission_path} ->
-          %{ref: ref} =
-            Task.Supervisor.async_nolink(
-              AutoGrader.TestUnitRunnerSupervisor,
-              fn -> test_unit.run(submission_path) end
-            )
+        state =
+          Enum.reduce(
+            test_units,
+            state,
+            fn test_unit, {results, refs, parent, submission_path} ->
+              %{ref: ref} =
+                Task.Supervisor.async_nolink(
+                  AutoGrader.TestUnitSupervisor,
+                  fn -> test_unit.run(submission_path) end
+                )
 
-          results = Map.put(results, test_unit, nil)
-          refs = Map.put(refs, ref, test_unit)
+              results = Map.put(results, test_unit, nil)
+              refs = Map.put(refs, ref, test_unit)
 
-          {results, refs, parent, submission_path}
-        end
-      )
+              {results, refs, parent, submission_path}
+            end
+          )
 
-    {:noreply, state}
+        {:noreply, state}
+
+      {:error, setup_unit, error} ->
+        maybe_handle_completion({
+          {:error, setup_unit, error},
+          refs,
+          parent,
+          submission_path
+        })
+    end
   end
 
   @impl true
@@ -65,6 +76,33 @@ defmodule AutoGrader.SubmissionRunner do
     results = Map.put(results, test_unit, {:error, error})
 
     maybe_handle_completion({results, refs, parent, submission_path})
+  end
+
+  @spec setup(binary()) ::
+          :ok
+          | {:error, :atom, term()}
+          | {:error, :atom, :timeout}
+  defp setup(submission_path) do
+    setup_units = Application.get_env(:auto_grader, :setup_units)
+
+    Enum.reduce_while(
+      setup_units,
+      :ok,
+      fn setup_unit, _ ->
+        task =
+          Task.Supervisor.async_nolink(
+            AutoGrader.SetupUnitSupervisor,
+            fn -> setup_unit.run(submission_path) end
+          )
+
+        case Task.yield(task, setup_unit.timeout()) || Task.shutdown(task) do
+          {:ok, :ok} -> {:cont, :ok}
+          {:ok, {:error, error}} -> {:halt, {:error, setup_unit, error}}
+          {:exit, {error, _}} -> {:halt, {:error, setup_unit, error}}
+          nil -> {:halt, {:error, setup_unit, :timeout}}
+        end
+      end
+    )
   end
 
   defp maybe_handle_completion({results, refs, parent, _} = state)

@@ -5,7 +5,8 @@ defmodule AutoGrader.Application do
   def start(_type, _args) do
     children = [
       {DynamicSupervisor, name: AutoGrader.SubmissionRunnerSupervisor},
-      {Task.Supervisor, name: AutoGrader.TestUnitRunnerSupervisor},
+      {Task.Supervisor, name: AutoGrader.TestUnitSupervisor},
+      {Task.Supervisor, name: AutoGrader.SetupUnitSupervisor},
       AutoGrader
     ]
 
