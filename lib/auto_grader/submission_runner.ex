@@ -33,7 +33,7 @@ defmodule AutoGrader.SubmissionRunner do
           %{ref: ref} =
             Task.Supervisor.async_nolink(
               AutoGrader.TestUnitRunnerSupervisor,
-              fn -> AutoGrader.TestUnit.run(task_id) end
+              fn -> AutoGrader.TestUnitExample.run(task_id) end
             )
 
           results = Map.put(results, task_id, nil)
