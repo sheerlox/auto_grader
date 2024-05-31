@@ -1,5 +1,5 @@
 defmodule AutoGrader do
-  use GenServer
+  use GenServer, restart: :temporary
 
   require Logger
 
@@ -19,25 +19,32 @@ defmodule AutoGrader do
 
   @impl true
   def handle_cast(:run, _state) do
-    students = ["student_a", "student_b", "student_c"]
+    submissions_path = Application.get_env(:auto_grader, :submissions_path)
+
+    submissions =
+      File.ls!(submissions_path)
+      |> Enum.map(&Path.join(submissions_path, &1))
+      |> Enum.filter(&File.dir?(&1))
 
     state =
       Enum.reduce(
-        students,
+        submissions,
         {%{}, %{}},
-        fn student_id, {results, pids} ->
+        fn submission_path, {results, pids} ->
           {:ok, pid} =
             DynamicSupervisor.start_child(
               AutoGrader.SubmissionRunnerSupervisor,
-              {AutoGrader.SubmissionRunner, parent: self()}
+              {
+                AutoGrader.SubmissionRunner,
+                [parent: self(), submission_path: submission_path]
+              }
             )
 
           ref = Process.monitor(pid)
 
-          results = Map.put(results, student_id, nil)
-          pids = Map.put(pids, pid, {student_id, ref})
+          results = Map.put(results, submission_path, nil)
+          pids = Map.put(pids, pid, {submission_path, ref})
 
-          Logger.info("Processing submission for student \"#{student_id}\"")
           {results, pids}
         end
       )
@@ -47,23 +54,24 @@ defmodule AutoGrader do
 
   @impl true
   def handle_info({ref, answer}, {results, pids}) do
-    {{student_id, ref}, pids} = Map.pop(pids, ref)
-    results = Map.put(results, student_id, answer)
+    {{submission_path, ref}, pids} = Map.pop(pids, ref)
+    results = Map.put(results, submission_path, answer)
 
     Process.demonitor(ref, [:flush])
 
     maybe_handle_completion({results, pids})
   end
 
-  defp maybe_handle_completion({results, pids} = state) when map_size(pids) == 0 do
-    Logger.info(
-      "================= RESULTS ==================\n\n#{inspect(results, pretty: true, limit: :infinity)}"
-    )
+  defp maybe_handle_completion({results, pids} = state)
+       when map_size(pids) == 0 do
+    Logger.info("""
+    ================= RESULTS ==================
 
-    # Logger.info(inspect(results, pretty: true, limit: :infinity))
+    #{inspect(results, pretty: true, limit: :infinity)}
+    """)
 
     # stop the whole application once we displayed the results
-    :init.stop()
+    # :init.stop()
 
     {:stop, :normal, state}
   end

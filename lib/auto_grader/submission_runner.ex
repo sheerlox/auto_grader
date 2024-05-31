@@ -1,6 +1,8 @@
 defmodule AutoGrader.SubmissionRunner do
   use GenServer, restart: :temporary
 
+  require Logger
+
   def start_link(args, opts \\ []) do
     GenServer.start_link(__MODULE__, args, opts)
   end
@@ -11,20 +13,23 @@ defmodule AutoGrader.SubmissionRunner do
     GenServer.cast(self(), :run)
 
     parent = Keyword.get(args, :parent)
+    submission_path = Keyword.get(args, :submission_path)
     results = %{}
     refs = %{}
-    {:ok, {results, refs, parent}}
+    {:ok, {results, refs, parent, submission_path}}
   end
 
   @impl true
-  def handle_cast(:run, state) do
+  def handle_cast(:run, {_, _, _, submission_path} = state) do
+    Logger.info("Processing submission \"#{submission_path}\"")
+
     tasks = 1..10//1
 
     state =
       Enum.reduce(
         tasks,
         state,
-        fn task_id, {results, refs, parent} ->
+        fn task_id, {results, refs, parent, submission_path} ->
           %{ref: ref} =
             Task.Supervisor.async_nolink(
               AutoGrader.TestUnitRunnerSupervisor,
@@ -34,7 +39,7 @@ defmodule AutoGrader.SubmissionRunner do
           results = Map.put(results, task_id, nil)
           refs = Map.put(refs, ref, task_id)
 
-          {results, refs, parent}
+          {results, refs, parent, submission_path}
         end
       )
 
@@ -42,24 +47,28 @@ defmodule AutoGrader.SubmissionRunner do
   end
 
   @impl true
-  def handle_info({ref, answer}, {results, refs, parent}) do
+  def handle_info({ref, answer}, {results, refs, parent, submission_path}) do
     Process.demonitor(ref, [:flush])
 
     {task_id, refs} = Map.pop(refs, ref)
     results = Map.put(results, task_id, answer)
 
-    maybe_handle_completion({results, refs, parent})
+    maybe_handle_completion({results, refs, parent, submission_path})
   end
 
   @impl true
-  def handle_info({:DOWN, ref, :process, _pid, {error, _}}, {results, refs, parent}) do
+  def handle_info(
+        {:DOWN, ref, :process, _pid, {error, _}},
+        {results, refs, parent, submission_path}
+      ) do
     {task_id, refs} = Map.pop(refs, ref)
     results = Map.put(results, task_id, {:error, error})
 
-    maybe_handle_completion({results, refs, parent})
+    maybe_handle_completion({results, refs, parent, submission_path})
   end
 
-  defp maybe_handle_completion({results, refs, parent} = state) when map_size(refs) == 0 do
+  defp maybe_handle_completion({results, refs, parent, _} = state)
+       when map_size(refs) == 0 do
     send(parent, {self(), results})
     {:stop, :normal, state}
   end
