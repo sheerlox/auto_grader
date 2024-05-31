@@ -23,21 +23,21 @@ defmodule AutoGrader.SubmissionRunner do
   def handle_cast(:run, {_, _, _, submission_path} = state) do
     Logger.info("Processing submission \"#{submission_path}\"")
 
-    tasks = 1..10//1
+    test_units = Application.get_env(:auto_grader, :test_units)
 
     state =
       Enum.reduce(
-        tasks,
+        test_units,
         state,
-        fn task_id, {results, refs, parent, submission_path} ->
+        fn test_unit, {results, refs, parent, submission_path} ->
           %{ref: ref} =
             Task.Supervisor.async_nolink(
               AutoGrader.TestUnitRunnerSupervisor,
-              fn -> AutoGrader.TestUnitExample.run(task_id) end
+              fn -> test_unit.run(submission_path) end
             )
 
-          results = Map.put(results, task_id, nil)
-          refs = Map.put(refs, ref, task_id)
+          results = Map.put(results, test_unit, nil)
+          refs = Map.put(refs, ref, test_unit)
 
           {results, refs, parent, submission_path}
         end
@@ -50,8 +50,8 @@ defmodule AutoGrader.SubmissionRunner do
   def handle_info({ref, answer}, {results, refs, parent, submission_path}) do
     Process.demonitor(ref, [:flush])
 
-    {task_id, refs} = Map.pop(refs, ref)
-    results = Map.put(results, task_id, answer)
+    {test_unit, refs} = Map.pop(refs, ref)
+    results = Map.put(results, test_unit, answer)
 
     maybe_handle_completion({results, refs, parent, submission_path})
   end
@@ -61,8 +61,8 @@ defmodule AutoGrader.SubmissionRunner do
         {:DOWN, ref, :process, _pid, {error, _}},
         {results, refs, parent, submission_path}
       ) do
-    {task_id, refs} = Map.pop(refs, ref)
-    results = Map.put(results, task_id, {:error, error})
+    {test_unit, refs} = Map.pop(refs, ref)
+    results = Map.put(results, test_unit, {:error, error})
 
     maybe_handle_completion({results, refs, parent, submission_path})
   end

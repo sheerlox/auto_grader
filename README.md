@@ -13,7 +13,7 @@ behaviors, this project will probably make some developers scream. My apologies
 for this. But it's a good starting point, and I believe that in the future,
 adding a DSL and enough utilities (e.g. to work with Git, run Java tests,
 etc ...), this project can become something very interesting, leveraging the
-core features of the BEAM VM and Elixir's language.
+core features of the BEAM VM and Elixir language.
 
 ## Running
 

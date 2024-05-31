@@ -1,4 +1,4 @@
-defmodule AutoGrader.TestUnitExample do
+defmodule AutoGrader.TestUnits.Example do
   @behaviour AutoGrader.TestUnit
 
   def run(_submission_path) do
