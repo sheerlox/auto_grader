@@ -86,3 +86,7 @@ I guess test units would be modules that would implement a behavior with a
 
 This way it is very easy to add new test units to be run on every submission by
 simply adding a new file and appending the module in a list in the config.
+
+## TODO
+
+- [ ] force system processes to exit when setup/test unit terminates (see https://hexdocs.pm/elixir/System.html#cmd/3)
