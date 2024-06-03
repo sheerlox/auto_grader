@@ -10,8 +10,8 @@ defmodule TestSuites.PortfolioManager.Tests.Example do
 
     cond do
       fail? and error? -> raise("An error occured in the test unit")
-      fail? -> :fail
-      true -> :pass
+      fail? -> {0, 1}
+      true -> {1, 1}
     end
   end
 end

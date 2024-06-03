@@ -69,9 +69,16 @@ defmodule AutoGrader.SubmissionRunner do
 
   @impl true
   def handle_info(
-        {:DOWN, ref, :process, _pid, {error, _}},
+        {:DOWN, ref, :process, _pid, error},
         {results, refs, parent, submission_path}
       ) do
+    error =
+      case error do
+        {{:nocatch, error}, _} -> error
+        {error, _} -> error
+        error -> error
+      end
+
     {test_unit, refs} = Map.pop(refs, ref)
     results = Map.put(results, test_unit, {:error, error})
 
