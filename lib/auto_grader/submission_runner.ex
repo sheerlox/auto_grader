@@ -114,11 +114,33 @@ defmodule AutoGrader.SubmissionRunner do
 
   defp maybe_handle_completion({results, refs, parent, _} = state)
        when map_size(refs) == 0 do
-    send(parent, {self(), results})
+    score = calculate_score(results)
+
+    send(parent, {self(), {score, results}})
+
     {:stop, :normal, state}
   end
 
   defp maybe_handle_completion(state) do
     {:noreply, state}
+  end
+
+  defp calculate_score(results) do
+    score =
+      Enum.reduce(results, 0, fn {_test_unit, result}, acc ->
+        test_score =
+          case result do
+            {:error, _} -> 0
+            {score, max_score} -> score / max_score
+          end
+
+        acc + test_score
+      end)
+
+    Float.round(
+      score / map_size(results) *
+        Application.get_env(:auto_grader, :max_score),
+      2
+    )
   end
 end
