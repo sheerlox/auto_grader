@@ -10,7 +10,9 @@ config :auto_grader,
     # TestSuites.PortfolioManager.Setup.Java.InstallDependencies
   ],
   test_units: [
-    TestSuites.PortfolioManager.Tests.Java.RunJunitTests
+    # TestSuites.PortfolioManager.Tests.Java.RunJunitTests,
+    TestSuites.PortfolioManager.Tests.Java.CheckAddNewStockTest,
+    TestSuites.PortfolioManager.Tests.Java.CheckAddStockQuantityTest
   ]
 
 config :logger, :default_formatter, truncate: :infinity
