@@ -3,6 +3,10 @@ defmodule TestSuites.PortfolioManager.Tests.Java.RunJunitTests do
 
   @test_output_regex ~r/Tests run: (\d+), Failures: (\d+), Errors: (\d+), Skipped: (\d+)/
 
+  @impl true
+  def coefficient(), do: 3
+
+  @impl true
   def run(submission_path) do
     {output, _} = System.cmd("mvn", ["test"], cd: submission_path)
 

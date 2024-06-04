@@ -92,7 +92,7 @@ defmodule AutoGrader do
     """)
 
     # stop the whole application once we displayed the results
-    # :init.stop()
+    :init.stop()
 
     {:stop, :normal, state}
   end

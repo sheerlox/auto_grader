@@ -3,6 +3,8 @@ defmodule TestSuites.PortfolioManager.Tests.Java.CheckGetEmptyPortfolioValueTest
 
   import TestSuites.PortfolioManager.Utils
 
+  def bonus?, do: true
+
   def run(submission_path) do
     content =
       load_test_file_content(submission_path)

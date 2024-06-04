@@ -126,19 +126,34 @@ defmodule AutoGrader.SubmissionRunner do
   end
 
   defp calculate_score(results) do
-    score =
-      Enum.reduce(results, 0, fn {_test_unit, result}, acc ->
-        test_score =
-          case result do
-            {:error, _} -> 0
-            {score, max_score} -> score / max_score
+    {total_score, total_coefficient} =
+      Enum.reduce(results, {0, 0}, fn {test_unit, result},
+                                      {total_score, total_coefficient} ->
+        coefficient =
+          case function_exported?(test_unit, :coefficient, 0) do
+            true -> test_unit.coefficient()
+            false -> AutoGrader.TestUnit.coefficient()
           end
 
-        acc + test_score
+        bonus? =
+          case function_exported?(test_unit, :bonus?, 0) do
+            true -> test_unit.bonus?()
+            false -> AutoGrader.TestUnit.bonus?()
+          end
+
+        score =
+          case result do
+            {:error, _} -> 0
+            {score, max_score} -> score / max_score * coefficient
+          end
+
+        coefficient = if bonus?, do: 0, else: coefficient
+
+        {total_score + score, total_coefficient + coefficient}
       end)
 
     Float.round(
-      score / map_size(results) *
+      total_score / total_coefficient *
         Application.get_env(:auto_grader, :max_score),
       2
     )
