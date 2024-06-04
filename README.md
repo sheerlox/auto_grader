@@ -90,3 +90,5 @@ simply adding a new file and appending the module in a list in the config.
 ## TODO
 
 - [ ] force system processes to exit when setup/test unit terminates (see https://hexdocs.pm/elixir/System.html#cmd/3)
+- [ ] add coefficient to test units
+- [ ] add bonus test units

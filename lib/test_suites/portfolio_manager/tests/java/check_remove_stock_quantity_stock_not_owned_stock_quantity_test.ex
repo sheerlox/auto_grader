@@ -9,10 +9,6 @@ defmodule TestSuites.PortfolioManager.Tests.Java.CheckRemoveStockQuantityStockNo
       |> get_test_function_content("testRemoveStockQuantityStockNotOwned")
 
     checks = [
-      not Regex.match?(
-        ~r/when\(stockStorage.get\(.+?\.thenReturn\(/,
-        content
-      ),
       Regex.match?(
         ~r/assertThrows\(NotEnoughStockQuantityException\.class,.+?stockPortfolio\.removeStockQuantity\(/,
         content
