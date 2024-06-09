@@ -3,7 +3,8 @@ defmodule TestSuites.PortfolioManager.Tests.Java.CheckGetStockPortfolioValueTest
 
   import TestSuites.PortfolioManager.Utils
 
-  def run(submission_path) do
+  @impl true
+  def run(submission_path, _context) do
     content =
       load_test_file_content(submission_path)
       |> get_test_function_content("test[gG]etStockPortfolioValue")

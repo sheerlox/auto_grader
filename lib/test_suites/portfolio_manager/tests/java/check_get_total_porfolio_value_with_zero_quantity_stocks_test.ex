@@ -3,9 +3,11 @@ defmodule TestSuites.PortfolioManager.Tests.Java.CheckGetTotalPortfolioValueWith
 
   import TestSuites.PortfolioManager.Utils
 
+  @impl true
   def bonus?, do: true
 
-  def run(submission_path) do
+  @impl true
+  def run(submission_path, _context) do
     content =
       load_test_file_content(submission_path)
       |> get_test_function_content(

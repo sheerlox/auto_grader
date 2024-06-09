@@ -7,7 +7,7 @@ defmodule TestSuites.PortfolioManager.Tests.Java.RunJunitTests do
   def coefficient(), do: 3
 
   @impl true
-  def run(submission_path) do
+  def run(submission_path, _context) do
     {output, _} = System.cmd("mvn", ["test"], cd: submission_path)
 
     if not Regex.match?(@test_output_regex, output),

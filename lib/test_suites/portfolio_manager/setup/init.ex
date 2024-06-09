@@ -8,7 +8,7 @@ defmodule TestSuites.PortfolioManager.Setup.Init do
   require Logger
 
   @impl true
-  def run(_) do
+  def run(_, context) do
     Logger.info("[INIT] Checking required executables are present ...")
 
     if :os.find_executable(~c"java") == false,
@@ -36,11 +36,11 @@ defmodule TestSuites.PortfolioManager.Setup.Init do
     case status do
       0 ->
         Logger.info("[INIT] Done.")
-        :ok
+        {:ok, context}
 
       _ ->
         Logger.error(result)
-        :error
+        {:error, result}
     end
   end
 

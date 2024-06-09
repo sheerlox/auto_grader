@@ -1,7 +1,7 @@
 defmodule TestSuites.PortfolioManager.Tests.Example do
   @behaviour AutoGrader.TestUnit
 
-  def run(_submission_path) do
+  def run(_submission_path, _context) do
     sleep_time = :rand.uniform(5) * 1000
     Process.sleep(sleep_time)
 

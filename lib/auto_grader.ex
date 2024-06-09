@@ -11,7 +11,8 @@ defmodule AutoGrader do
     queue = []
     pids = %{}
     results = %{}
-    {:ok, {queue, pids, results}}
+    context = %{}
+    {:ok, {queue, pids, results, context}}
   end
 
   def start_link(_args, _opts \\ []) do
@@ -19,9 +20,18 @@ defmodule AutoGrader do
   end
 
   @impl true
-  def handle_cast(:run, {_, pids, results}) do
+  def handle_cast(:run, {_, pids, results, context}) do
     init_module = Application.get_env(:auto_grader, :init_module)
-    :ok = init_module.run(nil)
+
+    context =
+      case init_module do
+        nil ->
+          %{}
+
+        _ ->
+          {:ok, context} = init_module.run(nil, context)
+          context
+      end
 
     submissions_path = Application.get_env(:auto_grader, :submissions_path)
 
@@ -32,11 +42,11 @@ defmodule AutoGrader do
 
     GenServer.cast(self(), :process_batch)
 
-    {:noreply, {queue, pids, results}}
+    {:noreply, {queue, pids, results, context}}
   end
 
   @impl true
-  def handle_cast(:process_batch, {queue, pids, results}) do
+  def handle_cast(:process_batch, {queue, pids, results, context}) do
     {batch, queue} =
       case Application.get_env(:auto_grader, :batch_size, :infinity) do
         n when n in [:infinity, 0, -1] ->
@@ -60,7 +70,11 @@ defmodule AutoGrader do
               AutoGrader.SubmissionRunnerSupervisor,
               {
                 AutoGrader.SubmissionRunner,
-                [parent: self(), submission_path: submission_path]
+                [
+                  parent: self(),
+                  submission_path: submission_path,
+                  context: context
+                ]
               }
             )
 
@@ -70,20 +84,20 @@ defmodule AutoGrader do
         end
       )
 
-    {:noreply, {queue, pids, results}}
+    {:noreply, {queue, pids, results, context}}
   end
 
   @impl true
-  def handle_info({ref, answer}, {queue, pids, results}) do
+  def handle_info({ref, answer}, {queue, pids, results, context}) do
     {{submission_path, ref}, pids} = Map.pop(pids, ref)
     results = Map.put(results, submission_path, answer)
 
     Process.demonitor(ref, [:flush])
 
-    maybe_handle_completion({queue, pids, results})
+    maybe_handle_completion({queue, pids, results, context})
   end
 
-  defp maybe_handle_completion({queue, pids, results} = state)
+  defp maybe_handle_completion({queue, pids, results, _} = state)
        when length(queue) == 0 and map_size(pids) == 0 do
     Logger.info("""
     ================= RESULTS ==================
@@ -97,7 +111,7 @@ defmodule AutoGrader do
     {:stop, :normal, state}
   end
 
-  defp maybe_handle_completion({_, pids, _} = state)
+  defp maybe_handle_completion({_, pids, _, _} = state)
        when map_size(pids) == 0 do
     GenServer.cast(self(), :process_batch)
 
