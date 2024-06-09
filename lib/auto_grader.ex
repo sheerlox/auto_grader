@@ -1,11 +1,38 @@
 defmodule AutoGrader do
+  @moduledoc """
+  An automatic and concurrent assignments grading program.
+
+  ## Lifecycle
+
+  1. INIT - `AutoGrader`:
+    - runs the potential init `AutoGrader.SetupUnit`
+    - list submissions from specified directory
+    - starts one supervised `AutoGrader.SubmissionRunner` per submission
+
+  2. PROCESSING - `AutoGrader.SubmissionRunner` (for each submission)
+    - runs the `AutoGrader.SetupUnit`s sequentially (in supervised tasks)
+    - runs all `AutoGrader.TestUnit`s concurrently (in supervised tasks)
+    - handles `AutoGrader.TestUnit`s completion messages as they arrive
+    - waits for all processes to complete, crash or time out
+    - calculates the submission's score
+    - sends back the final score and detailed results to `AutoGrader`
+
+  3. COMPLETING - `AutoGrader`
+    - waits for all `AutoGrader.SubmissionRunner` processes to complete
+    - displays final score and detailed results for all submissions
+  """
+
   use GenServer, restart: :temporary
 
   require Logger
 
+  def start_link(_args, _opts \\ []) do
+    GenServer.start_link(__MODULE__, name: __MODULE__)
+  end
+
   @impl true
   def init(_args) do
-    # start processing submissions after initialization
+    # automatically start processing submissions after initialization
     GenServer.cast(self(), :run)
 
     queue = []
@@ -15,21 +42,17 @@ defmodule AutoGrader do
     {:ok, {queue, pids, results, context}}
   end
 
-  def start_link(_args, _opts \\ []) do
-    GenServer.start_link(__MODULE__, name: __MODULE__)
-  end
-
   @impl true
   def handle_cast(:run, {_, pids, results, context}) do
-    init_module = Application.get_env(:auto_grader, :init_module)
+    init_setup_unit = Application.get_env(:auto_grader, :init_setup_unit)
 
     context =
-      case init_module do
+      case init_setup_unit do
         nil ->
           %{}
 
         _ ->
-          {:ok, context} = init_module.run(nil, context)
+          {:ok, context} = init_setup_unit.run(nil, context)
           context
       end
 
@@ -102,7 +125,7 @@ defmodule AutoGrader do
     Logger.info("""
     ================= RESULTS ==================
 
-    Number of submissions: #{map_size(results)}
+    Number of submissions processed: #{map_size(results)}
 
     #{inspect(results, pretty: true, limit: :infinity)}
     """)

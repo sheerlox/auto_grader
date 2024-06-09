@@ -1,4 +1,6 @@
 defmodule TestSuites.PortfolioManager.Tests.Java.CheckRemoveStockQuantityStockNotOwnedTest do
+  @moduledoc false
+
   @behaviour AutoGrader.TestUnit
 
   import TestSuites.PortfolioManager.Utils

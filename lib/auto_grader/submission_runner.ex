@@ -121,7 +121,7 @@ defmodule AutoGrader.SubmissionRunner do
        when map_size(refs) == 0 do
     score = calculate_score(results)
 
-    send(parent, {self(), score})
+    send(parent, {self(), {score, results}})
 
     {:stop, :normal, state}
   end

@@ -1,4 +1,6 @@
 defmodule TestSuites.PortfolioManager.Tests.Java.RunJunitTests do
+  @moduledoc false
+
   @behaviour AutoGrader.TestUnit
 
   @test_output_regex ~r/Tests run: (\d+), Failures: (\d+), Errors: (\d+), Skipped: (\d+)/

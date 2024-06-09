@@ -1,7 +1,5 @@
 defmodule TestSuites.PortfolioManager.Setup.Init do
-  @moduledoc """
-  Init setup module that runs before processing submissions.
-  """
+  @moduledoc false
 
   @behaviour AutoGrader.SetupUnit
 

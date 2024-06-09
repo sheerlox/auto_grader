@@ -1,4 +1,6 @@
 defmodule TestSuites.PortfolioManager.Tests.Java.CheckAddNegativeStockQuantityTest do
+  @moduledoc false
+
   @behaviour AutoGrader.TestUnit
 
   import TestSuites.PortfolioManager.Utils

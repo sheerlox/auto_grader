@@ -1,4 +1,6 @@
 defmodule TestSuites.PortfolioManager.Setup.Java.InstallDependencies do
+  @moduledoc false
+
   @behaviour AutoGrader.SetupUnit
 
   @impl true

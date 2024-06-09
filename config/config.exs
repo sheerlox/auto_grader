@@ -1,14 +1,16 @@
 import Config
 
 config :auto_grader,
-  submissions_path: "../REPOSITORIES/TP_PORTFOLIO_MANAGER",
+  submissions_path: "./examples/portfolio_manager",
   max_score: 20,
-  init_module: TestSuites.PortfolioManager.Setup.Init,
-  # setup units are run in order!
+  # the init setup unit runs once, before starting to process submissions
+  init_setup_unit: TestSuites.PortfolioManager.Setup.Init,
+  # setup units run in the declared order on each submission
   setup_units: [
-    # TestSuites.PortfolioManager.Setup.Java.CheckRequirements,
-    # TestSuites.PortfolioManager.Setup.Java.InstallDependencies
+    TestSuites.PortfolioManager.Setup.Java.CheckRequirements,
+    TestSuites.PortfolioManager.Setup.Java.InstallDependencies
   ],
+  # test units are run concurrently on each submission
   test_units: [
     TestSuites.PortfolioManager.Tests.Java.RunJunitTests,
     TestSuites.PortfolioManager.Tests.Java.CheckAddNewStockTest,

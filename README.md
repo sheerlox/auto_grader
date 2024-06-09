@@ -1,5 +1,12 @@
 # AutoGrader
 
+[![Documentation](https://img.shields.io/badge/ghpages-docs-lightgreen.svg)](https://sherlox.io/auto_grader/AutoGrader.html)
+
+All the text below this line was written as a project plan before beginning it.
+
+Please refer to the [documentation](https://sherlox.io/auto_grader/AutoGrader.html)
+for up-to-date information.
+
 ## Abstract
 
 I'm working on this project because I need to grade ~ 250 student projects
