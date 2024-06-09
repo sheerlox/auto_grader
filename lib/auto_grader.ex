@@ -102,6 +102,8 @@ defmodule AutoGrader do
     Logger.info("""
     ================= RESULTS ==================
 
+    Number of submissions: #{map_size(results)}
+
     #{inspect(results, pretty: true, limit: :infinity)}
     """)
 

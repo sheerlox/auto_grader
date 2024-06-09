@@ -5,12 +5,12 @@ defmodule AutoGrader.TestUnit do
   Returns a {score, max_score} tuple.
   """
   @callback run(submission_path :: binary(), context :: map()) ::
-              {integer(), integer()}
+              {number(), number()}
 
   @doc """
   The coefficient to apply to this test unit.
   """
-  @callback coefficient() :: integer() | float()
+  @callback coefficient() :: number()
 
   def coefficient, do: 1
 
